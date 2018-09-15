@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -45,11 +45,13 @@ class ReflexAgent(Agent):
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        chosenIndex = bestIndices[0] # Pick randomly among the best
 
         "Add more of your code here if you want to"
 
+
         return legalMoves[chosenIndex]
+
 
     def evaluationFunction(self, currentGameState, action):
         """
@@ -70,11 +72,31 @@ class ReflexAgent(Agent):
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
+        newFood_list = newFood.asList()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+#        return successorGameState.getScore()
+
+        def manhattanDistance(x,y):
+            return abs(x[0]-y[0])+abs(x[1]-y[1])
+
+        res1 = - min([manhattanDistance(newPos, food) for food in newFood_list]+[5000])
+        if(newFood_list == []):
+            res1 = 5000.
+        #res1 = -sum([manhattanDistance(newPos, food) for food in newFood])
+        res2 = sum([min(manhattanDistance(newPos, ghost.getPosition()), 6.) for ghost in newGhostStates])
+        res3 = 2*successorGameState.getScore()
+        res = res3 + res2
+
+
+        if(res2<5):
+            return(res1+res3)
+        else:
+            return(res1+res3+50)
+        #res = res1+res2+res3
+        return(res)
 
 def scoreEvaluationFunction(currentGameState):
     """
