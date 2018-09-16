@@ -91,7 +91,7 @@ class ReflexAgent(Agent):
         res = res3 + res2
 
 
-        if(res2<5):
+        if(res2<4):
             return(res1+res3)
         else:
             return(res1+res3+50)
@@ -156,8 +156,70 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        maxi,action = value(gameState, 0, 0)
+        return action
+
+
+    def value(gameState, depth, agent_index, stop_it_now):
+
+        n = gameState.getNumAgents
+        next_agent_index = (agent_index+1)//n
+        actions = gameState.getLegalActions(agent_index)
+        next_depth = next_depth
+        best_action = null
+        stop_it_now = False
+        score = 0.
+
+        if(agent_index == n-1):
+            next_depth+=1
+            if(next_depth>self.depth):
+                stop_it_now = True
+
+        if(agent_index==0): ## The agent is Pacman. He tries to maximize the function.
+
+            if gameState.isWin():
+                return(self.evaluation(gameState))
+
+            if gameState.isLose():
+                return self.evaluation(gameState)
+
+            maxi = 0.
+
+            for action in actions:
+                successor = gameState.generateSuccessor(action)
+                successor_score,action = value(successor, next_depth, next_agent_index)
+
+                if(successor_score>maxi):
+                    maxi = successor_score
+                    best_action = action
+
+            score = maxi
+
+        else: ## The agent is a ghost. He tries to minimize the scoreself.if gameState.isWin():
+            if gameState.isWin():
+                return -self.evaluation(gameState)
+
+            if gameState.isLose():
+                return -self.evaluation(gameState)
+
+            mini = 99999.
+
+            for action in actions:
+                successor = gameState.generateSuccessor(action)
+
+                if(stop_it_now):
+                    successor_score = self.evaluationFunction(successor)
+                else:
+                    successor_score = value(successor, next_depth, next_agent_index)
+
+                if(successor_score<mini):
+                    mini = successor_score
+                    best_action = action
+
+            score = mini
+
+        return (score, best_action)
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
