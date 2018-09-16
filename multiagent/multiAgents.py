@@ -156,17 +156,20 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        maxi,action = value(gameState, 0, 0)
+        maxi,action = self.value(gameState, 0, 0)
         return action
 
 
-    def value(gameState, depth, agent_index, stop_it_now):
+    def value(self, gameState, depth, agent_index):
 
-        n = gameState.getNumAgents
-        next_agent_index = (agent_index+1)//n
+        n = gameState.getNumAgents()
+        next_agent_index = agent_index+1
+        if(next_agent_index>n-1):
+            next_agent_index = 0
+
         actions = gameState.getLegalActions(agent_index)
-        next_depth = next_depth
-        best_action = null
+        next_depth = depth
+        best_action = 0.
         stop_it_now = False
         score = 0.
 
@@ -178,16 +181,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if(agent_index==0): ## The agent is Pacman. He tries to maximize the function.
 
             if gameState.isWin():
-                return(self.evaluation(gameState))
+                return(self.evaluationFunction(gameState)),0.
 
             if gameState.isLose():
-                return self.evaluation(gameState)
+                return self.evaluationFunction(gameState), 0.
 
             maxi = 0.
 
             for action in actions:
-                successor = gameState.generateSuccessor(action)
-                successor_score,action = value(successor, next_depth, next_agent_index)
+                successor = gameState.generateSuccessor(agent_index, action)
+                successor_score,action = self.value(successor, next_depth, next_agent_index)
 
                 if(successor_score>maxi):
                     maxi = successor_score
@@ -197,20 +200,20 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         else: ## The agent is a ghost. He tries to minimize the scoreself.if gameState.isWin():
             if gameState.isWin():
-                return -self.evaluation(gameState)
+                return (-self.evaluationFunction(gameState), 0.)
 
             if gameState.isLose():
-                return -self.evaluation(gameState)
+                return (-self.evaluationFunction(gameState), 0.)
 
             mini = 99999.
 
             for action in actions:
-                successor = gameState.generateSuccessor(action)
+                successor = gameState.generateSuccessor(agent_index, action)
 
                 if(stop_it_now):
                     successor_score = self.evaluationFunction(successor)
                 else:
-                    successor_score = value(successor, next_depth, next_agent_index)
+                    successor_score,_ = self.value(successor, next_depth, next_agent_index)
 
                 if(successor_score<mini):
                     mini = successor_score
