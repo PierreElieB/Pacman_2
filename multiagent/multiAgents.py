@@ -300,6 +300,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 stop = True
 
         actions = gameState.getLegalActions(agent_index)
+        alpha2 = alpha
 
         for action in actions:
             successor = gameState.generateSuccessor(agent_index, action)
@@ -307,13 +308,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if(stop):
                 next_score = self.evaluationFunction(successor)
             else:
-                next_score, _, alpha, beta = self.value(successor, (agent_index+1)%n, next_depth, alpha, beta)
+                next_score, _, alpha2, beta = self.value(successor, (agent_index+1)%n, next_depth, alpha, beta)
 
             if(next_score < mini):
                     mini, opt_action = next_score, action
 
-            if(agent_index ==n-1):
-                if(mini < alpha):
+            if(agent_index > 0):
+                if(mini < alpha2):
                     return mini, opt_action, alpha, beta
                 beta = min(beta, mini)
 
@@ -342,12 +343,12 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if(stop):
                 next_score = self.evaluationFunction(successor)
             else:
-                next_score, _, alpha, beta = self.value(successor, (agent_index+1)%n, next_depth, alpha, beta)
+                next_score, _, alpha, beta2 = self.value(successor, (agent_index+1)%n, next_depth, alpha, beta)
 
             if(next_score > maxi):
                 maxi, opt_action = next_score, action
 
-            if(maxi > beta):
+            if(maxi > beta2):
                 return maxi,  opt_action, alpha, beta
 
             alpha = max(alpha, maxi)
@@ -475,21 +476,16 @@ def betterEvaluationFunction(currentGameState):
     newFood = successorGameState.getFood()
     newFood_list = newFood.asList()
     newGhostStates = successorGameState.getGhostStates()
-    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-
-    ## Three components for the score: the distance to the ghost, the score and the distance to the remaining foods.
 
     def manhattanDistance(x,y):
         return abs(x[0]-y[0])+abs(x[1]-y[1])
 
-    def real_distance(x,y):
-        ### Implementation of the search algorithm.
-        return None
 
     nfood = len(newFood_list)
     res1 = -sum([manhattanDistance(newPos, food) for food in newFood_list])
     if(newFood_list == []):
         res1 = 5000.
+
     res2 = sum([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
     res3 = 10*successorGameState.getScore()
     res = res3 + res2
@@ -499,7 +495,7 @@ def betterEvaluationFunction(currentGameState):
         return(res1+res3-5*res1)
     else:
         return(3.*res1+res3+500+res2-20*nfood)
-    #res = res1+res2+res3
+
     return(res)
 
 
