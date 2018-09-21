@@ -463,7 +463,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
         return maxi, opt_action
 
-
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -479,28 +478,24 @@ def betterEvaluationFunction(currentGameState):
     newGhostStates = successorGameState.getGhostStates()
     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-    "*** YOUR CODE HERE ***"
-#        return successorGameState.getScore()
-
     def manhattanDistance(x,y):
         return abs(x[0]-y[0])+abs(x[1]-y[1])
 
-    res1 = - min([manhattanDistance(newPos, food) for food in newFood_list]+[5000])
-    
-    if(newFood_list == []):
-        res1 = 5000.
-    #res1 = -sum([manhattanDistance(newPos, food) for food in newFood])
-    res2 = sum([min(manhattanDistance(newPos, ghost.getPosition()), 6.) for ghost in newGhostStates])
-    res3 = 2*successorGameState.getScore()
-    res = res3 + res2
+    score_min_distance = - min([manhattanDistance(newPos, food) for food in newFood_list]+[5000])
+
+    if(newFood_list==[]):
+        score_min_distance = 200.
+
+    score_ghost_distance = sum([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
+
+    if(score_ghost_distance < 4):
+        score_ghost_distance = -500.
 
 
-    if(res2<4):
-        return(res1+res3)
-    else:
-        return(res1+res3+50)
-    #res = res1+res2+res3
-    return(res)
+    score_game_score = successorGameState.getScore()
+    score_num_food = -len(newFood_list)
+
+    return(2*score_min_distance + score_ghost_distance + 300.*score_num_food + 10*score_game_score)
 
 
 # Abbreviation
