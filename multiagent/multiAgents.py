@@ -470,7 +470,6 @@ def betterEvaluationFunction(currentGameState):
 
     DESCRIPTION: <write something here so we know what you did>
     """
-
     successorGameState = currentGameState
     newPos = successorGameState.getPacmanPosition()
     newFood = successorGameState.getFood()
@@ -478,24 +477,31 @@ def betterEvaluationFunction(currentGameState):
     newGhostStates = successorGameState.getGhostStates()
     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
+    ## Three components for the score: the distance to the ghost, the score and the distance to the remaining foods.
+
     def manhattanDistance(x,y):
         return abs(x[0]-y[0])+abs(x[1]-y[1])
 
-    score_min_distance = - min([manhattanDistance(newPos, food) for food in newFood_list]+[5000])
+    def real_distance(x,y):
+        ### Implementation of the search algorithm.
+        return None
 
-    if(newFood_list==[]):
-        score_min_distance = 200.
+    nfood = len(newFood_list)
+    res1 = -sum([manhattanDistance(newPos, food) for food in newFood_list])
+    if(newFood_list == []):
+        res1 = 5000.
+    res2 = sum([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
+    res3 = 10*successorGameState.getScore()
+    res = res3 + res2
 
-    score_ghost_distance = sum([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
 
-    if(score_ghost_distance < 4):
-        score_ghost_distance = -500.
+    if(res2<3):
+        return(res1+res3-5*res1)
+    else:
+        return(3.*res1+res3+500+res2-20*nfood)
+    #res = res1+res2+res3
+    return(res)
 
-
-    score_game_score = successorGameState.getScore()
-    score_num_food = -len(newFood_list)
-
-    return(2*score_min_distance + score_ghost_distance + 300.*score_num_food + 10*score_game_score)
 
 
 # Abbreviation
