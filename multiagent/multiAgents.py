@@ -156,72 +156,86 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        maxi,action = self.value(gameState, 0, 0)
+        _,action = self.value(gameState, 0, 1)
         return action
 
+    def value(self, gameState, agent_index, depth):
+        """
+        A second try for this function.
+        """
+        #print("depth: "+str(self.depth))
 
-    def value(self, gameState, depth, agent_index):
+
+        if(gameState.isWin() or gameState.isLose()):
+            return self.evaluationFunction(gameState), None
 
         n = gameState.getNumAgents()
-        next_agent_index = agent_index+1
-        if(next_agent_index>n-1):
-            next_agent_index = 0
+
+        if(agent_index > 0):
+            return self.min_value(gameState, agent_index, depth)
+
+        return self.max_value(gameState, agent_index, depth)
+
+
+    def min_value(self, gameState, agent_index, depth):
+        mini = 99999.
+        opt_action = None
+        n = gameState.getNumAgents()
+
+        stop = False
+        next_depth = depth
+
+        if(agent_index==n-1):
+            next_depth+=1
+
+            if(next_depth>self.depth):
+                stop = True
 
         actions = gameState.getLegalActions(agent_index)
-        next_depth = depth
-        best_action = 0.
-        stop_it_now = False
-        score = 0.
 
-        if(agent_index == n-1):
+        for action in actions:
+            successor = gameState.generateSuccessor(agent_index, action)
+
+            if(stop):
+                next_score = self.evaluationFunction(successor)
+            else:
+                next_score, _ = self.value(successor, (agent_index+1)%n, next_depth)
+
+            if(next_score < mini):
+                    mini, opt_action = next_score, action
+
+        return mini, opt_action
+
+
+    def max_value(self, gameState, agent_index, depth):
+        maxi = -99999.
+        opt_action = None
+        n = gameState.getNumAgents()
+
+        stop = False
+        next_depth = depth
+
+        if(agent_index==n-1):
             next_depth+=1
             if(next_depth>self.depth):
-                stop_it_now = True
+                stop = True
 
-        if(agent_index==0): ## The agent is Pacman. He tries to maximize the function.
+        actions = gameState.getLegalActions(agent_index)
 
-            if gameState.isWin():
-                return(self.evaluationFunction(gameState)),0.
+        for action in actions:
+            successor = gameState.generateSuccessor(agent_index, action)
+            next_score = 0.
 
-            if gameState.isLose():
-                return self.evaluationFunction(gameState), 0.
+            if(stop):
+                next_score = self.evaluationFunction(successor)
+            else:
+                next_score, _ = self.value(successor, (agent_index+1)%n, next_depth)
 
-            maxi = 0.
+            if(next_score > maxi):
+                maxi, opt_action = next_score, action
 
-            for action in actions:
-                successor = gameState.generateSuccessor(agent_index, action)
-                successor_score,action = self.value(successor, next_depth, next_agent_index)
+        return maxi, opt_action
 
-                if(successor_score>maxi):
-                    maxi = successor_score
-                    best_action = action
-
-            score = maxi
-
-        else: ## The agent is a ghost. He tries to minimize the scoreself.if gameState.isWin():
-            if gameState.isWin():
-                return (-self.evaluationFunction(gameState), 0.)
-
-            if gameState.isLose():
-                return (-self.evaluationFunction(gameState), 0.)
-
-            mini = 99999.
-
-            for action in actions:
-                successor = gameState.generateSuccessor(agent_index, action)
-
-                if(stop_it_now):
-                    successor_score = self.evaluationFunction(successor)
-                else:
-                    successor_score,_ = self.value(successor, next_depth, next_agent_index)
-
-                if(successor_score<mini):
-                    mini = successor_score
-                    best_action = action
-
-            score = mini
-
-        return (score, best_action)
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
